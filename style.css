@@ -1,0 +1,120 @@
+body {
+  margin: 0;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: "Orbitron", sans-serif;
+}
+#calculator {
+  position: relative;
+  width: 320px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+  z-index: 1;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: powerOn 1.5s ease-in-out 0.2s forwards;
+}
+@keyframes powerOn {
+  0% {
+    visibility: visible;
+    opacity: 0;
+    transform: scale(0.5);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.7);
+  }
+  100% {
+    visibility: visible;
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+  }
+}
+.display {
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 2.5em;
+  padding: 15px;
+  text-align: right;
+  border: 2px solid #00ffff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px #00ffff;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+button {
+  background: #1a1a1a;
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  font-size: 1.2em;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
+  background: #00ff88;
+  color: #000;
+}
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 0 5px #00ff88;
+}
+.operator {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+.operator:hover {
+  background: #ff00ff;
+  box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+  color: #000;
+}
+.equals {
+  border-color: #ffff00;
+  color: #ffff00;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+.equals:hover {
+  background: #ffff00;
+  box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+  color: #000;
+}
+.clear {
+  border-color: #ff3333;
+  color: #ff3333;
+  box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+}
+.clear:hover {
+  background: #ff3333;
+  box-shadow: 0 0 20px #ff3333, 0 0 40px #ff3333;
+  color: #000;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: 0.6;
+}

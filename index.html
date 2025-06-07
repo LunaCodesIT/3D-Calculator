@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="calculator">
+      <div class="display" id="display">0</div>
+      <div class="buttons">
+        <button class="clear" onclick="clearDisplay()">C</button>
+        <button onclick="appendToDisplay('(')">(</button>
+        <button onclick="appendToDisplay(')')">)</button>
+        <button class="operator" onclick="appendToDisplay('/')">÷</button>
+        <button onclick="appendToDisplay('7')">7</button>
+        <button onclick="appendToDisplay('8')">8</button>
+        <button onclick="appendToDisplay('9')">9</button>
+        <button class="operator" onclick="appendToDisplay('*')">×</button>
+        <button onclick="appendToDisplay('4')">4</button>
+        <button onclick="appendToDisplay('5')">5</button>
+        <button onclick="appendToDisplay('6')">6</button>
+        <button class="operator" onclick="appendToDisplay('-')">-</button>
+        <button onclick="appendToDisplay('1')">1</button>
+        <button onclick="appendToDisplay('2')">2</button>
+        <button onclick="appendToDisplay('3')">3</button>
+        <button class="operator" onclick="appendToDisplay('+')">+</button>
+        <button onclick="appendToDisplay('0')">0</button>
+        <button onclick="appendToDisplay('.')">.</button>
+        <button onclick="backspace()">←</button>
+        <button class="equals" onclick="calculate()">=</button>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"></script>
+    <script>
+      // Three.js Arithmetic Symbols Background
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.createElement("canvas"),
+        alpha: true,
+      });
+      document.body.appendChild(renderer.domElement);
+      renderer.domElement.style.position = "absolute";
+      renderer.domElement.style.top = "0";
+      renderer.domElement.style.left = "0";
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      const symbols = ["+", "-", "×", "÷", "=", "(", ")"];
+      const symbolMeshes = [];
+      const symbolCount = 150;
+
+      // Distribute symbols more evenly across the viewport
+      const gridSize = Math.ceil(Math.sqrt(symbolCount));
+      const spacing = 100 / gridSize;
+      let index = 0;
+
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          if (index >= symbolCount) break;
+          const canvas = document.createElement("canvas");
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          ctx.font = "80px Orbitron";
+          ctx.fillStyle = Math.random() > 0.5 ? "#00ffcc" : "#ff66ff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(
+            symbols[Math.floor(Math.random() * symbols.length)],
+            64,
+            64
+          );
+
+          const texture = new THREE.CanvasTexture(canvas);
+          const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            fog: false,
+          });
+          const sprite = new THREE.Sprite(material);
+          sprite.position.set(
+            -50 + (i + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.5,
+            -50 + (j + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.5,
+            (Math.random() - 0.5) * 50
+          );
+          sprite.scale.set(4, 4, 1);
+          sprite.userData = {
+            velocity: new THREE.Vector3(
+              (Math.random() - 0.5) * 0.15,
+              (Math.random() - 0.5) * 0.15,
+              (Math.random() - 0.5) * 0.15
+            ),
+            scalePhase: Math.random() * Math.PI * 2,
+          };
+          scene.add(sprite);
+          symbolMeshes.push(sprite);
+          index++;
+        }
+      }
+
+      camera.position.z = 50;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        symbolMeshes.forEach((sprite) => {
+          sprite.position.add(sprite.userData.velocity);
+          if (sprite.position.y < -50) sprite.position.y = 50;
+          if (sprite.position.y > 50) sprite.position.y = -50;
+          if (sprite.position.x < -50) sprite.position.x = 50;
+          if (sprite.position.x > 50) sprite.position.x = -50;
+          sprite.rotation.z += 0.01;
+          sprite.scale.set(
+            4 + Math.sin(sprite.userData.scalePhase) * 0.5,
+            4 + Math.sin(sprite.userData.scalePhase) * 0.5,
+            1
+          );
+          sprite.userData.scalePhase += 0.05;
+          sprite.material.map.needsUpdate = false;
+        });
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      });
+
+      // Calculator Logic
+      let display = document.getElementById("display");
+
+      function appendToDisplay(value) {
+        if (display.innerText === "0" && value !== ".") {
+          display.innerText = value;
+        } else {
+          display.innerText += value;
+        }
+      }
+
+      function clearDisplay() {
+        display.innerText = "0";
+      }
+
+      function backspace() {
+        display.innerText = display.innerText.slice(0, -1) || "0";
+      }
+
+      function calculate() {
+        try {
+          let result = eval(
+            display.innerText.replace("×", "*").replace("÷", "/")
+          );
+          display.innerText = Number.isFinite(result) ? result : "Error";
+        } catch {
+          display.innerText = "Error";
+        }
+      }
+    </script>
+    <script type="text/javascript">
+      var gk_isXlsx = false;
+      var gk_xlsxFileLookup = {};
+      var gk_fileData = {};
+      function filledCell(cell) {
+        return cell !== "" && cell != null;
+      }
+      function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+          try {
+            var workbook = XLSX.read(gk_fileData[filename], { type: "base64" });
+            var firstSheetName = workbook.SheetNames[0];
+            var worksheet = workbook.Sheets[firstSheetName];
+
+            // Convert sheet to JSON to filter blank rows
+            var jsonData = XLSX.utils.sheet_to_json(worksheet, {
+              header: 1,
+              blankrows: false,
+              defval: "",
+            });
+            // Filter out blank rows (rows where all cells are empty, null, or undefined)
+            var filteredData = jsonData.filter((row) => row.some(filledCell));
+
+            // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+            var headerRowIndex = filteredData.findIndex(
+              (row, index) =>
+                row.filter(filledCell).length >=
+                filteredData[index + 1]?.filter(filledCell).length
+            );
+            // Fallback
+            if (headerRowIndex === -1 || headerRowIndex > 25) {
+              headerRowIndex = 0;
+            }
+
+            // Convert filtered JSON back to CSV
+            var csv = XLSX.utils.aoa_to_sheet(
+              filteredData.slice(headerRowIndex)
+            ); // Create a new sheet from filtered array of arrays
+            csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+            return csv;
+          } catch (e) {
+            console.error(e);
+            return "";
+          }
+        }
+        return gk_fileData[filename] || "";
+      }
+    </script>
+  </body>
+</html>
